@@ -11,7 +11,7 @@ export class UsersService {
     private readonly prisma: PrismaService,
     private readonly roleService: RoleService,
   ) {}
-  async createUser(dto: CreateUserDto): Promise<User> {
+  async createUser(dto: CreateUserDto): Promise<User | null> {
     const candidate = await this.prisma.user.findFirst({
       where: { login: dto.login },
     });
@@ -30,7 +30,26 @@ export class UsersService {
     });
     return user;
   }
-  async getAllUsers() {
+  async getAllUsers(): Promise<User[] | null> {
     return await this.prisma.user.findMany();
+  }
+
+  async delete(id: number): Promise<boolean | null> {
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: {
+        id: id,
+      },
+    });
+    await this.prisma.userRoles.deleteMany({
+      where: {
+        userId: user.id,
+      },
+    });
+    await this.prisma.user.delete({
+      where: {
+        id: id,
+      },
+    });
+    return true;
   }
 }

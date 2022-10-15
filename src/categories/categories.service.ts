@@ -59,6 +59,11 @@ export class CategoriesService {
         id: id,
       },
     });
+    await this.prisma.categoryAttributes.deleteMany({
+      where: {
+        categoryId: category.id,
+      },
+    });
     await this.prisma.category.delete({
       where: {
         id: id,

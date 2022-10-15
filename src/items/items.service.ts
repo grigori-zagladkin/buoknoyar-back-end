@@ -73,37 +73,52 @@ export class ItemsService {
   async update(dto: UpdateItemDto, image: Express.Multer.File) {
     const item = await this.prisma.item.findUniqueOrThrow({
       where: {
-        id: dto.id,
+        id: +dto.id,
       },
     });
     await this.fileService.deleteFile(item.image);
     const fileName = await this.fileService.createFile(image);
-    // const _properties = dto.properties.map((item, index) => ({
-    //   itemId: dto.id,
-    //   attribute: dto.properties[index],
-    //   value: dto.values[index]
-    // }));
-    // const properties = await this.prisma.itemAttributeValue.createMany({
-    //   data: _properties
-    // })
     const updatedItem = await this.prisma.item.update({
       where: {
-        id: dto.id,
+        id: +dto.id,
       },
       data: {
         title: dto.title,
-        categoryId: dto.categoryId,
-        count: dto.count,
-        price: dto.price,
+        price: Number(dto.price),
+        count: Number(dto.count),
+        categoryId: Number(dto.categoryId),
         image: fileName,
       },
     });
-    // await this.prisma.itemAttributeValue.updateMany({
-    //   where: {
-
-    //   }
-    // })
-    return updatedItem;
+    await this.prisma.itemAttributeValue.deleteMany({
+      where: {
+        itemId: +dto.id,
+      },
+    });
+    for (let i = 0; i < dto.values.length; i++) {
+      await this.prisma.itemAttributeValue.create({
+        data: {
+          itemId: +dto.id,
+          value: dto.values[i],
+          attribute: dto.properties[i],
+        },
+      });
+    }
+    return {
+      item: updatedItem,
+      properties: [
+        ...(
+          await this.prisma.itemAttributeValue.findMany({
+            where: { itemId: +dto.id },
+          })
+        ).map((item, index) => {
+          return {
+            attribute: item.attribute,
+            value: item.value,
+          };
+        }),
+      ],
+    };
   }
 
   async remove(id: number) {

@@ -38,31 +38,32 @@ export class ItemsController {
     return this.itemsService.create(createItemDto, image);
   }
 
-  // @Get()
-  // index(
-  //   @Query('orderBy') orderBy: string = 'asc',
-  //   @Query('limit') limit: number = 40,
-  //   @Query('categoryId') categoryId: number = 1,
-  //   @Query('search') search: string = '',
-  //   @Query('page') page: number = 1,
-  // ) {
-  //   limit = limit > 40 ? 40 : limit;
-  //   let offset = limit * page - limit;
-  //   if (categoryId == 1 && search == '') {
-  //     return this.itemsService.findAll(limit, offset);
-  //   } else if (search == '' && categoryId > 1) {
-  //     return this.itemsService.findByCategories(categoryId, limit, offset);
-  //   } else if (search && categoryId == 1) {
-  //     return this.itemsService.findByTitle(search, limit, offset);
-  //   } else if (search && categoryId > 1) {
-  //     return this.itemsService.findByTitleAndCategories(
-  //       search,
-  //       categoryId,
-  //       limit,
-  //       offset,
-  //     );
-  //   }
-  // }
+  @Get()
+  index(
+    @Query('orderBy') orderBy: string = 'asc',
+    @Query('limit') limit: number = 40,
+    @Query('categoryId') categoryId: number = 1,
+    @Query('search') search: string = '',
+    @Query('page') page: number = 1,
+  ) {
+    return this.itemsService.findAll();
+    // limit = limit > 40 ? 40 : limit;
+    // let offset = limit * page - limit;
+    // if (categoryId == 1 && search == '') {
+    //   return this.itemsService.findAll(limit, offset);
+    // } else if (search == '' && categoryId > 1) {
+    //   return this.itemsService.findByCategories(categoryId, limit, offset);
+    // } else if (search && categoryId == 1) {
+    //   return this.itemsService.findByTitle(search, limit, offset);
+    // } else if (search && categoryId > 1) {
+    //   return this.itemsService.findByTitleAndCategories(
+    //     search,
+    //     categoryId,
+    //     limit,
+    //     offset,
+    //   );
+    // }
+  }
 
   @Get(':id')
   findOne(@Param('id') id: string) {

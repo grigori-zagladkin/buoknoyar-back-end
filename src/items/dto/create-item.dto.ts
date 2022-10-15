@@ -1,25 +1,21 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsInt, IsString } from 'class-validator';
+import { IsArray, IsInt, IsNumberString, IsString } from 'class-validator';
 
 export class CreateItemDto {
   @ApiProperty({ example: 'окно', description: 'Название предемета' })
   @IsString({ message: 'Должно быть строкой' })
   readonly title: string;
 
-  @ApiProperty({ example: 'wefewwf.jpg', description: 'Изображение предемета' })
-  @IsString({ message: 'Должно быть строкой' })
-  readonly image: string;
-
   @ApiProperty({ example: 4, description: 'Количество товара' })
-  @IsInt({ message: 'Должно быть числом' })
+  @IsNumberString()
   readonly count: number;
 
   @ApiProperty({ example: 4000, description: 'Цена товара' })
-  @IsInt({ message: 'Должно быть числом' })
+  @IsNumberString()
   readonly price: number;
 
   @ApiProperty({ example: 4, description: 'id категории' })
-  @IsInt({ message: 'Должно быть числом' })
+  @IsNumberString()
   readonly categoryId: number;
 
   @ApiProperty({

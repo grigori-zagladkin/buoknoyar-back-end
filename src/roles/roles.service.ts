@@ -8,7 +8,7 @@ import { CreateRoleDto } from './dto/create-role.dto';
 export class RoleService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createRole(dto: CreateRoleDto): Promise<Role> {
+  async createRole(dto: CreateRoleDto): Promise<Role | null> {
     const candidate = await this.prisma.role.findFirst({
       where: { value: dto.value },
     });
@@ -21,7 +21,7 @@ export class RoleService {
     return role;
   }
 
-  async getRoleByValue(value: string) {
+  async getRoleByValue(value: string): Promise<Role | null> {
     return await this.prisma.role.findFirstOrThrow({
       where: { value },
     });
