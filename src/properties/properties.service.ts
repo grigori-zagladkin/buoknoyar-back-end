@@ -62,10 +62,11 @@ export class PropertiesService {
     const property = await this.prisma.attribute.findUniqueOrThrow({
       where: { id: id },
     });
-    return await this.prisma.attribute.delete({
+    await this.prisma.attribute.delete({
       where: {
         id: id,
       },
     });
+    return true;
   }
 }

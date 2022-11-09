@@ -12,10 +12,7 @@ export class ServicesService {
     private readonly file: FilesService,
     private readonly prisma: PrismaService,
   ) {}
-  async create(
-    dto: CreateServiceDto,
-    image: Express.Multer.File,
-  ): Promise<Service | null> {
+  async create(dto: CreateServiceDto): Promise<Service | null> {
     const candidate = await this.prisma.service.findFirst({
       where: {
         title: dto.title,
@@ -24,11 +21,9 @@ export class ServicesService {
     if (candidate) {
       throw new ExistException(dto.title);
     }
-    const fileName = await this.file.createFile(image);
     const createdService = await this.prisma.service.create({
       data: {
         ...dto,
-        image: fileName,
       },
     });
     return createdService;
@@ -46,41 +41,23 @@ export class ServicesService {
     });
   }
 
-  async update(
-    dto: UpdateServiceDto,
-    image: Express.Multer.File,
-  ): Promise<Service | null> {
-    const service = await this.prisma.service.findFirstOrThrow({
-      where: {
-        id: +dto.id,
-      },
-    });
-    await this.file.deleteFile(service.image);
-    const fileName = await this.file.createFile(image);
+  async update(dto: UpdateServiceDto): Promise<Service | null> {
     return await this.prisma.service.update({
       where: {
         id: +dto.id,
       },
       data: {
         ...dto,
-        id: +dto.id,
-        image: fileName,
       },
     });
   }
 
-  async remove(id: number): Promise<boolean | null> {
-    const service = await this.prisma.service.findUniqueOrThrow({
-      where: {
-        id: id,
-      },
-    });
-    await this.file.deleteFile(service.image);
+  async remove(id: number): Promise<number | null> {
     await this.prisma.service.delete({
       where: {
         id: id,
       },
     });
-    return true;
+    return id;
   }
 }

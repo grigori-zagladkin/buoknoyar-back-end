@@ -11,7 +11,7 @@ export class ItemsService {
     private readonly prisma: PrismaService,
     private readonly fileService: FilesService,
   ) {}
-  async create(createItemDto: CreateItemDto, image: Express.Multer.File) {
+  async create(createItemDto: CreateItemDto) {
     const candidate = await this.prisma.item.findFirst({
       where: {
         title: createItemDto.title,
@@ -20,14 +20,13 @@ export class ItemsService {
     if (candidate) {
       throw new ExistException(createItemDto.title);
     }
-    const fileName = await this.fileService.createFile(image);
     const createdItem = await this.prisma.item.create({
       data: {
         title: createItemDto.title,
         price: Number(createItemDto.price),
         count: Number(createItemDto.count),
         categoryId: Number(createItemDto.categoryId),
-        image: fileName,
+        image: createItemDto.image,
       },
     });
     for (let i = 0; i < createItemDto.properties.length; i++) {
@@ -42,9 +41,37 @@ export class ItemsService {
     return createdItem;
   }
 
-  async findAll() {
+  async findAll(
+    orderBy: string,
+    limit: number,
+    categoryId: number,
+    searchString: string,
+    page: number,
+  ) {
+    limit = limit > 40 ? 40 : limit;
+    let offset = limit * page - limit;
+    const items = await this.prisma.item.findMany({
+      where: {
+        categoryId: categoryId,
+        // OR: [
+        //   {
+        //     ttile: {
+        //       search
+        //     }
+        //   }
+        // ]
+      },
+      skip: offset,
+      take: limit,
+      orderBy: [
+        {
+          count: 'desc',
+        },
+        { title: orderBy === 'asc' ? 'asc' : 'desc' },
+      ],
+    });
     return {
-      items: await this.prisma.item.findMany(),
+      items,
       count: await this.prisma.item.count(),
     };
   }
@@ -70,14 +97,12 @@ export class ItemsService {
     };
   }
 
-  async update(dto: UpdateItemDto, image: Express.Multer.File) {
+  async update(dto: UpdateItemDto) {
     const item = await this.prisma.item.findUniqueOrThrow({
       where: {
         id: +dto.id,
       },
     });
-    await this.fileService.deleteFile(item.image);
-    const fileName = await this.fileService.createFile(image);
     const updatedItem = await this.prisma.item.update({
       where: {
         id: +dto.id,
@@ -87,7 +112,7 @@ export class ItemsService {
         price: Number(dto.price),
         count: Number(dto.count),
         categoryId: Number(dto.categoryId),
-        image: fileName,
+        image: dto.image,
       },
     });
     await this.prisma.itemAttributeValue.deleteMany({
@@ -121,7 +146,7 @@ export class ItemsService {
     };
   }
 
-  async remove(id: number) {
+  async remove(id: number): Promise<number> {
     const item = await this.prisma.item.findUniqueOrThrow({
       where: {
         id,
@@ -138,6 +163,6 @@ export class ItemsService {
         id,
       },
     });
-    return true;
+    return id;
   }
 }

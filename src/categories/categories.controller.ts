@@ -9,12 +9,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Category } from '@prisma/client';
 import { Roles } from 'src/auth/roles-auth.decorator';
 import { RolesGuards } from 'src/auth/roles.guards';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { Category } from '@prisma/client';
+import { CategoryModel } from './entities/category.entity';
 
 @Controller('categories')
 export class CategoriesController {
@@ -24,28 +25,50 @@ export class CategoriesController {
   @Roles('ADMIN')
   @UseGuards(RolesGuards)
   @ApiOperation({ summary: 'Создание категории' })
-  @ApiResponse({ status: 200 })
-  create(@Body() createCategoryDto: CreateCategoryDto) {
+  @ApiResponse({ status: 200, type: CategoryModel })
+  create(
+    @Body() createCategoryDto: CreateCategoryDto,
+  ): Promise<Category | null> {
     return this.categoriesService.create(createCategoryDto);
   }
 
   @Get()
-  findAll() {
+  @ApiOperation({ summary: 'Получение всех категорий' })
+  @ApiResponse({ status: 200, type: [CategoryModel] })
+  findAll(): Promise<Category[]> {
     return this.categoriesService.findAll();
   }
 
   @Get('/:id')
-  findOne(@Param('id') id: string) {
+  @ApiOperation({ summary: 'Получение категории' })
+  @ApiResponse({ status: 200, type: CategoryModel })
+  findOne(@Param('id') id: string): Promise<Category | null> {
     return this.categoriesService.findOne(+id);
   }
 
+  @Get('/properties/:id')
+  @ApiOperation({ summary: 'Получение свойст товара по id категории' })
+  @ApiResponse({ status: 200 })
+  getPropertiesByCategoryId(@Param('id') id: string) {
+    return this.categoriesService.getPropertiesByCategoryId(+id);
+  }
+
   @Patch()
-  update(@Body() dto: UpdateCategoryDto) {
+  @Roles('ADMIN')
+  @UseGuards(RolesGuards)
+  @ApiOperation({ summary: 'Обновление категории' })
+  @ApiResponse({ status: 200, type: CategoryModel })
+  update(@Body() dto: UpdateCategoryDto): Promise<Category | null> {
     return this.categoriesService.update(dto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
+  @Delete('/:id')
+  @Roles('ADMIN')
+  @UseGuards(RolesGuards)
+  @ApiOperation({ summary: 'Удаление категории' })
+  @ApiResponse({ status: 200 })
+  remove(@Param('id') id: string): Promise<number | null> {
+    console.log(id);
     return this.categoriesService.remove(+id);
   }
 }

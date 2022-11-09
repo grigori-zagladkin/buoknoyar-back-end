@@ -9,4 +9,8 @@ export class CreateServiceDto {
   @ApiProperty({ example: 'Мы можем ....', description: 'Описание услуги' })
   @IsString({ message: 'Должно быть строкой' })
   readonly description: string;
+
+  @ApiProperty({ example: 'efregreggreg.jpg', description: 'Изображение' })
+  @IsString({ message: 'Должно быть строкой' })
+  readonly image: string;
 }

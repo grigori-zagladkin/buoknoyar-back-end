@@ -13,7 +13,9 @@ import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { Roles } from 'src/auth/roles-auth.decorator';
 import { RolesGuards } from 'src/auth/roles.guards';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { PropertyModel } from './entities/property.entity';
+import { Attribute } from '@prisma/client';
 
 @Controller('properties')
 export class PropertiesController {
@@ -22,28 +24,41 @@ export class PropertiesController {
   @Post()
   @Roles('ADMIN')
   @UseGuards(RolesGuards)
-  @ApiOperation({ summary: 'Создание свойств' })
-  create(@Body() dto: CreatePropertyDto) {
+  @ApiOperation({ summary: 'Создание свойствa' })
+  @ApiResponse({ status: 200, type: PropertyModel })
+  create(@Body() dto: CreatePropertyDto): Promise<Attribute | null> {
     return this.propertiesService.create(dto);
   }
 
   @Get()
-  findAll() {
+  @ApiOperation({ summary: 'Получение всех свойств' })
+  @ApiResponse({ status: 200, type: [PropertyModel] })
+  findAll(): Promise<Attribute[]> {
     return this.propertiesService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  @ApiOperation({ summary: 'Получение свойства по id' })
+  @ApiResponse({ status: 200, type: PropertyModel })
+  findOne(@Param('id') id: string): Promise<Attribute | null> {
     return this.propertiesService.findOne(+id);
   }
 
   @Patch()
-  update(@Body() dto: UpdatePropertyDto) {
+  @Roles('ADMIN')
+  @UseGuards(RolesGuards)
+  @ApiOperation({ summary: 'Обновление свойствa' })
+  @ApiResponse({ status: 200, type: PropertyModel })
+  update(@Body() dto: UpdatePropertyDto): Promise<Attribute | null> {
     return this.propertiesService.update(dto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
+  @Delete('/:id')
+  @Roles('ADMIN')
+  @UseGuards(RolesGuards)
+  @ApiOperation({ summary: 'Удаление свойствa' })
+  @ApiResponse({ status: 200 })
+  remove(@Param('id') id: string): Promise<boolean | null> {
     return this.propertiesService.remove(+id);
   }
 }

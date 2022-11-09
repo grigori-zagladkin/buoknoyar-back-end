@@ -7,8 +7,6 @@ import {
   Param,
   Delete,
   UseGuards,
-  UseInterceptors,
-  UploadedFile,
   Query,
 } from '@nestjs/common';
 import { ItemsService } from './items.service';
@@ -17,8 +15,8 @@ import { UpdateItemDto } from './dto/update-item.dto';
 import { ApiOperation, ApiTags, ApiResponse } from '@nestjs/swagger';
 import { Roles } from 'src/auth/roles-auth.decorator';
 import { RolesGuards } from 'src/auth/roles.guards';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { Item } from '@prisma/client';
+import { ItemModel } from './entities/item.entity';
 
 @ApiTags('Товары')
 @Controller('items')
@@ -30,15 +28,13 @@ export class ItemsController {
   @UseGuards(RolesGuards)
   @ApiOperation({ summary: 'Создание товара' })
   @ApiResponse({ status: 200 })
-  @UseInterceptors(FileInterceptor('image'))
-  create(
-    @Body() createItemDto: CreateItemDto,
-    @UploadedFile() image: Express.Multer.File,
-  ): Promise<Item | null> {
-    return this.itemsService.create(createItemDto, image);
+  create(@Body() createItemDto: CreateItemDto): Promise<Item | null> {
+    return this.itemsService.create(createItemDto);
   }
 
   @Get()
+  @ApiOperation({ summary: 'Получение товаров' })
+  @ApiResponse({ type: [ItemModel], status: 200 })
   index(
     @Query('orderBy') orderBy: string = 'asc',
     @Query('limit') limit: number = 40,
@@ -46,41 +42,23 @@ export class ItemsController {
     @Query('search') search: string = '',
     @Query('page') page: number = 1,
   ) {
-    return this.itemsService.findAll();
-    // limit = limit > 40 ? 40 : limit;
-    // let offset = limit * page - limit;
-    // if (categoryId == 1 && search == '') {
-    //   return this.itemsService.findAll(limit, offset);
-    // } else if (search == '' && categoryId > 1) {
-    //   return this.itemsService.findByCategories(categoryId, limit, offset);
-    // } else if (search && categoryId == 1) {
-    //   return this.itemsService.findByTitle(search, limit, offset);
-    // } else if (search && categoryId > 1) {
-    //   return this.itemsService.findByTitleAndCategories(
-    //     search,
-    //     categoryId,
-    //     limit,
-    //     offset,
-    //   );
-    // }
+    return this.itemsService.findAll(orderBy, limit, categoryId, search, page);
   }
 
-  @Get(':id')
+  @Get('/:id')
+  @ApiOperation({ summary: 'Получение товара по id' })
+  @ApiResponse({ type: ItemModel, status: 200 })
   findOne(@Param('id') id: string) {
     return this.itemsService.findOne(+id);
   }
 
   @Patch()
-  @UseInterceptors(FileInterceptor('image'))
   @Roles('ADMIN')
   @UseGuards(RolesGuards)
   @ApiOperation({ summary: 'Обновление товара' })
   @ApiResponse({ status: 200 })
-  update(
-    @Body() updateItemDto: UpdateItemDto,
-    @UploadedFile() image: Express.Multer.File,
-  ) {
-    return this.itemsService.update(updateItemDto, image);
+  update(@Body() updateItemDto: UpdateItemDto) {
+    return this.itemsService.update(updateItemDto);
   }
 
   @Delete(':id')
@@ -88,7 +66,7 @@ export class ItemsController {
   @UseGuards(RolesGuards)
   @ApiOperation({ summary: 'Удаление товара' })
   @ApiResponse({ status: 200 })
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: string): Promise<number> {
     return this.itemsService.remove(+id);
   }
 }

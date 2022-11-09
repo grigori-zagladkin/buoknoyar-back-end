@@ -18,6 +18,10 @@ export class CreateItemDto {
   @IsNumberString()
   readonly categoryId: number;
 
+  @ApiProperty({ example: 'ewffefewfr.jpg', description: 'Название файла' })
+  @IsString()
+  image: string;
+
   @ApiProperty({
     example: ['высота', 'ширина'],
     description: 'Массив атрибутов',

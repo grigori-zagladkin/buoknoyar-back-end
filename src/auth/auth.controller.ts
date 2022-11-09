@@ -11,21 +11,24 @@ export class AuthController {
   @ApiOperation({ summary: 'Авторизация' })
   @ApiResponse({ status: 200 })
   @Post('/login')
-  async login(@Body() dto: CreateUserDto) {
+  async login(@Body() dto: CreateUserDto): Promise<{ token: string }> {
+    console.log(dto);
     return this.authService.login(dto);
   }
 
   @ApiOperation({ summary: 'Регистрация' })
   @ApiResponse({ status: 200 })
   @Post('/registration')
-  async registration(@Body() dto: CreateUserDto) {
+  async registration(@Body() dto: CreateUserDto): Promise<{ token: string }> {
     return this.authService.registration(dto);
   }
 
   @ApiOperation({ summary: 'Получение данных о пользователе' })
   @ApiResponse({ status: 200 })
   @Get('/me')
-  async me(@Headers('authorization') authorization: string) {
+  async me(
+    @Headers('authorization') authorization: string,
+  ): Promise<{ token: string }> {
     return this.authService.me(authorization.split(' ')[1]);
   }
 }

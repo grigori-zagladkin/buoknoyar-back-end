@@ -7,8 +7,6 @@ import {
   Param,
   Delete,
   UseGuards,
-  UseInterceptors,
-  UploadedFile,
 } from '@nestjs/common';
 import { ServicesService } from './services.service';
 import { CreateServiceDto } from './dto/create-service.dto';
@@ -16,7 +14,6 @@ import { UpdateServiceDto } from './dto/update-service.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/auth/roles-auth.decorator';
 import { RolesGuards } from 'src/auth/roles.guards';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { Service } from '@prisma/client';
 import { ServiceModel } from './entities/service.entity';
 
@@ -30,12 +27,8 @@ export class ServicesController {
   @ApiResponse({ status: 200, type: ServiceModel })
   @Roles('ADMIN')
   @UseGuards(RolesGuards)
-  @UseInterceptors(FileInterceptor('image'))
-  create(
-    @Body() dto: CreateServiceDto,
-    @UploadedFile() image: Express.Multer.File,
-  ): Promise<Service | null> {
-    return this.servicesService.create(dto, image);
+  create(@Body() dto: CreateServiceDto): Promise<Service | null> {
+    return this.servicesService.create(dto);
   }
 
   @Get()
@@ -57,20 +50,16 @@ export class ServicesController {
   @ApiResponse({ status: 200, type: ServiceModel })
   @Roles('ADMIN')
   @UseGuards(RolesGuards)
-  @UseInterceptors(FileInterceptor('image'))
-  update(
-    @Body() updateServiceDto: UpdateServiceDto,
-    @UploadedFile() image: Express.Multer.File,
-  ): Promise<Service | null> {
-    return this.servicesService.update(updateServiceDto, image);
+  update(@Body() updateServiceDto: UpdateServiceDto): Promise<Service | null> {
+    return this.servicesService.update(updateServiceDto);
   }
 
-  @Delete(':id')
+  @Delete('/:id')
   @ApiOperation({ summary: 'Удаление услуги' })
   @ApiResponse({ status: 200 })
   @Roles('ADMIN')
   @UseGuards(RolesGuards)
-  remove(@Param('id') id: string): Promise<boolean | null> {
+  remove(@Param('id') id: string): Promise<number | null> {
     return this.servicesService.remove(+id);
   }
 }

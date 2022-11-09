@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
 }
 
 datasource db {
@@ -12,12 +13,16 @@ model Service {
   title       String
   description String  @db.Text
   image       String?
+
+  @@map("service")
 }
 
 model Role {
-  id     Int         @id @default(autoincrement())
-  value  String      @unique
-  users  UserRoles[]
+  id    Int         @id @default(autoincrement())
+  value String      @unique
+  users UserRoles[]
+
+  @@map("role")
 }
 
 model User {
@@ -40,10 +45,14 @@ model UserRoles {
 }
 
 model Category {
-  id         Int                  @id @default(autoincrement())
-  title      String               @unique
-  items      Item[]
-  attributes CategoryAttributes[]
+  id          Int                  @id @default(autoincrement())
+  title       String               @unique
+  image       String?
+  description String?
+  items       Item[]
+  attributes  CategoryAttributes[]
+
+  @@map("category")
 }
 
 model Item {
@@ -55,6 +64,10 @@ model Item {
   category   Category             @relation(fields: [categoryId], references: [id])
   categoryId Int
   properties ItemAttributeValue[]
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+
+  @@map("item")
 }
 
 model CategoryAttributes {
@@ -64,12 +77,15 @@ model CategoryAttributes {
   categoryId  Int
 
   @@id([attributeId, categoryId])
+  @@map("category_attribute")
 }
 
 model Attribute {
   id         Int                  @id @default(autoincrement())
   name       String
   categories CategoryAttributes[]
+
+  @@map("attribute")
 }
 
 model ItemAttributeValue {
@@ -78,4 +94,6 @@ model ItemAttributeValue {
   itemId    Int
   value     String
   attribute String
+
+  @@map("item_attribute_value")
 }

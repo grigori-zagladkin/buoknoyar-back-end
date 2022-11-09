@@ -15,7 +15,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
   ) {}
 
-  private async validateUser(dto: CreateUserDto) {
+  private async validateUser(dto: CreateUserDto): Promise<User> {
     const user = await this.prisma.user.findFirst({
       where: {
         login: dto.login,
@@ -30,7 +30,7 @@ export class AuthService {
     });
   }
 
-  private async generateToken(user: User) {
+  private async generateToken(user: User): Promise<{ token: string }> {
     const roles = await this.prisma.userRoles.findMany({
       where: {
         userId: user.id,
@@ -55,11 +55,11 @@ export class AuthService {
       token: this.jwtService.sign(payload),
     };
   }
-  async login(dto: CreateUserDto) {
+  async login(dto: CreateUserDto): Promise<{ token: string }> {
     const user = await this.validateUser(dto);
     return this.generateToken(user);
   }
-  async registration(dto: CreateUserDto) {
+  async registration(dto: CreateUserDto): Promise<{ token: string }> {
     const candidate = await this.prisma.user.findFirst({
       where: {
         login: dto.login,
@@ -77,7 +77,7 @@ export class AuthService {
       return this.generateToken(user);
     }
   }
-  async me(token: string) {
+  async me(token: string): Promise<{ token: string }> {
     const isVerifyToken = await this.jwtService.verify(token);
     if (!isVerifyToken) {
       throw new UnauthorizedException({ message: 'Токен не верифицирован' });

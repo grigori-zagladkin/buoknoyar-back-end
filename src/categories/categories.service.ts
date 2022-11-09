@@ -36,13 +36,31 @@ export class CategoriesService {
     });
   }
 
+  async getPropertiesByCategoryId(id: number) {
+    const categoryAttributes = await this.prisma.categoryAttributes.findMany({
+      where: {
+        categoryId: id,
+      },
+    });
+    let properties = [];
+    for (let i = 0; i < categoryAttributes.length; i++) {
+      const property = await this.prisma.attribute.findFirst({
+        where: {
+          id: categoryAttributes[i].attributeId,
+        },
+      });
+      properties.push(property);
+    }
+    return properties;
+  }
+
   async update(dto: UpdateCategoryDto): Promise<Category | null> {
     const category = await this.prisma.category.findUniqueOrThrow({
       where: {
         id: dto.id,
       },
     });
-    await this.prisma.category.update({
+    const updated = await this.prisma.category.update({
       where: {
         id: dto.id,
       },
@@ -50,10 +68,10 @@ export class CategoriesService {
         ...dto,
       },
     });
-    return category;
+    return updated;
   }
 
-  async remove(id: number): Promise<boolean | null> {
+  async remove(id: number): Promise<number | null> {
     const category = await this.prisma.category.findUniqueOrThrow({
       where: {
         id: id,
@@ -69,6 +87,6 @@ export class CategoriesService {
         id: id,
       },
     });
-    return true;
+    return id;
   }
 }
